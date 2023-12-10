@@ -31,10 +31,35 @@ export default function RecipeDetailScreen(props) {
   const [isFavourite, setIsFavourite] = useState(false);
   const navigation = useNavigation();
   const [meal, setMeal] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [isNutritionTapped, setIsNutritionTapped] = useState(false);
+  const [nutritionInfo, setNutritionInfo] = useState([]);
+  const [preparation, setPreparation] = useState([]);
+
+  const getCustomRecipeData = async () => {
+    try {
+      // Make a GET request to the server
+      const response = await axios.get(
+        `https://nutrichoice.onrender.com/api/v1/recipe/getRecipe`
+      );
+
+      if (response.data?.result === 0) {
+        // Set the user data in the state
+        setData(response?.data?.payload?.recipe);
+        setNutritionInfo(response?.data?.payload?.recipe?.[0]?.nutrition);
+        setPreparation(response?.data?.payload?.recipe?.[0]?.preparation);
+      }
+    } catch (error) {
+      console.error("API Error:", error.message);
+      // Handle error, perhaps show an error message to the user
+    }
+  };
 
   useEffect(() => {
     getMealData(item.idMeal);
+    getCustomRecipeData();
   }, []);
 
   const getMealData = async (id) => {
@@ -51,14 +76,6 @@ export default function RecipeDetailScreen(props) {
       console.log("error: ", err.message);
     }
   };
-
-  const [isNutritionTapped, setIsNutritionTapped] = useState(false);
-  const [nutritionInfo, setNutritionInfo] = useState({
-    protein: "15g",
-    fat: "8g",
-    carbs: "20g",
-    water: "50ml",
-  });
 
   const ingredientsIndexes = (meal) => {
     if (!meal) return [];
@@ -200,7 +217,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    35
+                    {nutritionInfo?.[0]}
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -222,7 +239,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    03
+                    {nutritionInfo?.[1]}
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -244,7 +261,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    103
+                    {nutritionInfo?.[2]}
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -274,7 +291,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(1.3) }}
                     className="font-bold text-neutral-700"
                   >
-                    Easy
+                    {nutritionInfo?.[3]}
                   </Text>
                 </View>
               </View>
@@ -320,7 +337,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    50 g
+                    {preparation?.[0]} g
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -345,7 +362,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    20.7 g
+                    {preparation?.[1]} g
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -370,7 +387,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    34 g
+                    {preparation?.[2]} g
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -396,7 +413,7 @@ export default function RecipeDetailScreen(props) {
                     style={{ fontSize: hp(2) }}
                     className="font-bold text-neutral-700"
                   >
-                    27 g
+                    {preparation?.[3]} g
                   </Text>
                   <Text
                     style={{ fontSize: hp(1.3) }}
@@ -407,7 +424,6 @@ export default function RecipeDetailScreen(props) {
                 </View>
               </View>
             </Animated.View>
-
             {/* ingredients */}
             <Animated.View
               entering={FadeInDown.delay(200)

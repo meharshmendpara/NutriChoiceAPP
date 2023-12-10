@@ -11,14 +11,27 @@ import axios from "axios";
 import Recipes from "../components/recipes";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState("Beef");
   const [categories, setCategories] = useState([]);
   const [meals, setMeals] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [state, setState] = useState({});
+  const getData = async () => {
+    let isUserAuthenticated = await AsyncStorage.getItem("login");
+    isUserAuthenticated =
+      isUserAuthenticated && typeof isUserAuthenticated == "string"
+        ? JSON.parse(isUserAuthenticated).payload
+        : isUserAuthenticated?.payload;
+    setState({
+      ...state,
+      userLogin: isUserAuthenticated,
+    });
+  };
   useEffect(() => {
+    getData();
     getCategories();
     getRecipes();
   }, []);
@@ -88,7 +101,7 @@ export default function HomeScreen() {
         <View className="mx-4 flex-row justify-between items-center mb-2">
           {/* <BellIcon size={hp(4)} color="white" /> */}
           <Text style={{ fontSize: hp(1.7) }} className="text-neutral-600">
-            Hello, Darshit!
+            Hello,{state?.userLogin?.admin?.name ?? "User"}{" "}
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("UserProfile")}>
             <Image
