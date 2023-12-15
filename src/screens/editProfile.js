@@ -38,10 +38,9 @@ const ProfileScreen = () => {
 
       // Make a PUT request to the server
       const response = await axios.put(
-        `https://nutrichoice.onrender.com/api/v1/admin/update/${state?.userLogin.admin?._id}`,
+        `https://nutrichoice.onrender.com/api/v1/admin/update/${id}`,
         updatedUserData
       );
-
 
       // Switch to edit mode after successful submission
       setIsEditing(!isEditing);
@@ -100,6 +99,7 @@ const ProfileScreen = () => {
         setEditableLocation(parsedUserId?.admin?.country);
         setEditableBio(parsedUserId?.aboutMe);
         getUser(parsedUserId?.admin?._id);
+        setId(parsedUserId?.admin?._id);
       } catch (error) {
         console.error("Error reading user ID from AsyncStorage:", error);
       }
