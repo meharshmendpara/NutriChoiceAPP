@@ -19,12 +19,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const [editableEmail, setEditableEmail] = useState("darshit@gmail.com");
+  const [editableEmail, setEditableEmail] = useState(undefined);
   const [userData, setUserData] = useState();
   const [id, setId] = useState(undefined);
   const [state, setState] = useState();
-  const [editableLocation, setEditableLocation] = useState("Regina, SK");
-  const [editableBio, setEditableBio] = useState("This is my bio");
+  const [editableLocation, setEditableLocation] = useState(undefined);
+  const [editableBio, setEditableBio] = useState(undefined);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmission = async () => {
@@ -61,16 +61,19 @@ const ProfileScreen = () => {
   const getUser = async (userId) => {
     try {
       // Make a GET request to the server
-      const response =
-        state?.userLogin.admin?._id &&
-        (await axios.get(
-          `https://nutrichoice.onrender.com/api/v1/admin/get-admin?id=${userId}`
-        ));
+      const response = await axios.get(
+        `https://nutrichoice.onrender.com/api/v1/admin/get-admin?id=${userId}`
+      );
 
       // Handle the API response
 
-      // Set the user data in the state
-      setUserData(response?.data);
+      if (response.data) {
+        // Set the user data in the state
+        setUserData(response?.data?.payload?.user);
+        setEditableBio(response?.data?.payload?.user?.aboutMe);
+        setEditableEmail(response?.data?.payload?.user?.email);
+        setEditableLocation(response?.data?.payload?.user?.country);
+      }
     } catch (error) {
       console.error("API Error:", error.message);
       // Handle error, perhaps show an error message to the user
@@ -91,9 +94,6 @@ const ProfileScreen = () => {
       name: userId?.admin?.name,
       country: userId?.admin?.country,
     });
-    setEditableEmail(userId?.admin?.email);
-    setEditableLocation(userId?.admin?.country);
-    setEditableBio(userId?.aboutMe);
   };
 
   React.useEffect(() => {
@@ -104,6 +104,10 @@ const ProfileScreen = () => {
           userId && typeof userId === "string"
             ? JSON.parse(userId).payload
             : null;
+        console.log(parsedUserId.admin._id);
+        setEditableEmail(parsedUserId?.admin?.email);
+        setEditableLocation(parsedUserId?.admin?.country);
+        setEditableBio(parsedUserId?.aboutMe);
         getUser(parsedUserId?.admin?._id);
       } catch (error) {
         console.error("Error reading user ID from AsyncStorage:", error);
@@ -131,7 +135,7 @@ const ProfileScreen = () => {
           source={require("../../assets/images/avatar.png")}
           style={styles.avatar}
         />
-        <Text style={styles.name}>{state?.name}</Text>
+        <Text style={styles.name}>{userData?.name}</Text>
       </View>
 
       <View style={styles.infoContainer}>
