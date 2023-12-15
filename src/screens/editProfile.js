@@ -21,6 +21,7 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const [editableEmail, setEditableEmail] = useState("darshit@gmail.com");
   const [userData, setUserData] = useState();
+  const [id, setId] = useState(undefined);
   const [state, setState] = useState();
   const [editableLocation, setEditableLocation] = useState("Regina, SK");
   const [editableBio, setEditableBio] = useState("This is my bio");
@@ -31,8 +32,8 @@ const ProfileScreen = () => {
       // Prepare the payload with the updated user data
       const updatedUserData = {
         email: editableEmail,
-        location: editableLocation,
-        bio: editableBio,
+        country: editableLocation,
+        aboutMe: editableBio,
       };
 
       // Make a PUT request to the server
@@ -42,7 +43,12 @@ const ProfileScreen = () => {
       );
 
       // Handle the API response
-      console.log("API Response:", response.data);
+      console.log(
+        "API Response:",
+        updatedUserData,
+        `https://nutrichoice.onrender.com/api/v1/admin/update/${state?.userLogin.admin?._id}`,
+        response.data
+      );
 
       // Switch to edit mode after successful submission
       setIsEditing(!isEditing);
@@ -54,19 +60,17 @@ const ProfileScreen = () => {
 
   const getUser = async (userId) => {
     try {
-      console.log(userId);
       // Make a GET request to the server
       const response =
         state?.userLogin.admin?._id &&
         (await axios.get(
-          `https://nutrichoice.onrender.com/api/v1/admin/get-admin?id=${state?.userLogin?.admin?._id}`
+          `https://nutrichoice.onrender.com/api/v1/admin/get-admin?id=${userId}`
         ));
 
       // Handle the API response
-      console.log("@@@@@@@@@@@User Details:", response.data);
 
       // Set the user data in the state
-      setUserData(response.data);
+      setUserData(response?.data);
     } catch (error) {
       console.error("API Error:", error.message);
       // Handle error, perhaps show an error message to the user
@@ -76,26 +80,37 @@ const ProfileScreen = () => {
   const getUserIdFromLocalStorage = async () => {
     // Retrieve user ID from local storage
     let userId = await AsyncStorage.getItem("login");
-    userId =
-      userId && typeof userId === "string"
-        ? JSON.parse(userId).payload
-        : userId.payload;
+    console.log(typeof userId);
+    userId = userId && typeof userId == "string" && JSON.parse(userId).payload;
+    setId(userId);
     setState({
       ...state,
       userLogin: userId,
-      email: state?.userLogin.admin?.email,
-      id: state?.userLogin.admin?._id,
-      name: state?.userLogin.admin?.name,
-      country: state?.userLogin.admin?.country,
+      email: userId?.admin?.email,
+      id: userId?.admin?._id,
+      name: userId?.admin?.name,
+      country: userId?.admin?.country,
     });
-    setEditableEmail(state?.userLogin.admin?.email);
-    setEditableLocation(state?.userLogin.admin?.country);
-    setEditableBio(state?.userLogin?.aboutMe)
+    setEditableEmail(userId?.admin?.email);
+    setEditableLocation(userId?.admin?.country);
+    setEditableBio(userId?.aboutMe);
   };
 
   React.useEffect(() => {
+    const getUserIdFromLocalStorage = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("login");
+        const parsedUserId =
+          userId && typeof userId === "string"
+            ? JSON.parse(userId).payload
+            : null;
+        getUser(parsedUserId?.admin?._id);
+      } catch (error) {
+        console.error("Error reading user ID from AsyncStorage:", error);
+      }
+    };
+
     getUserIdFromLocalStorage();
-    getUser();
   }, []);
 
   return (
