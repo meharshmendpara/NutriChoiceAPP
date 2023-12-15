@@ -42,13 +42,6 @@ const ProfileScreen = () => {
         updatedUserData
       );
 
-      // Handle the API response
-      console.log(
-        "API Response:",
-        updatedUserData,
-        `https://nutrichoice.onrender.com/api/v1/admin/update/${state?.userLogin.admin?._id}`,
-        response.data
-      );
 
       // Switch to edit mode after successful submission
       setIsEditing(!isEditing);
@@ -83,7 +76,6 @@ const ProfileScreen = () => {
   const getUserIdFromLocalStorage = async () => {
     // Retrieve user ID from local storage
     let userId = await AsyncStorage.getItem("login");
-    console.log(typeof userId);
     userId = userId && typeof userId == "string" && JSON.parse(userId).payload;
     setId(userId);
     setState({
@@ -104,7 +96,6 @@ const ProfileScreen = () => {
           userId && typeof userId === "string"
             ? JSON.parse(userId).payload
             : null;
-        console.log(parsedUserId.admin._id);
         setEditableEmail(parsedUserId?.admin?.email);
         setEditableLocation(parsedUserId?.admin?.country);
         setEditableBio(parsedUserId?.aboutMe);
